@@ -18,20 +18,38 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: `Layer ${layer} not found` }, { status: 404 })
   }
 
-  const filePath = path.join(process.cwd(), 'public', 'data', filename)
-  try {
-    const raw = fs.readFileSync(filePath, 'utf-8')
-    const json = JSON.parse(raw)
-    return NextResponse.json({
-      type: "FeatureCollection",
-      metadata: {
-        layer,
-        source: "Government of Karnataka / CGWB / GSI",
-        crs: "EPSG:4326"
-      },
-      features: json.features
-    })
-  } catch (err) {
-    return NextResponse.json({ error: "Failed to read layer file", detail: err.message }, { status: 500 })
+  // Attempt reading from potential paths
+  const candidatePaths = [
+    path.join(process.cwd(), 'public', 'data', filename),
+    path.join(process.cwd(), 'apps', 'web', 'public', 'data', filename),
+    path.join(process.cwd(), 'data', 'curated', filename)
+  ]
+
+  for (const fp of candidatePaths) {
+    try {
+      if (fs.existsSync(fp)) {
+        const raw = fs.readFileSync(fp, 'utf-8')
+        const json = JSON.parse(raw)
+        return NextResponse.json({
+          type: "FeatureCollection",
+          metadata: {
+            layer,
+            source: "Survey of India / KSRSAC / CGWB / GSI",
+            crs: "EPSG:4326"
+          },
+          features: json.features
+        }, {
+          headers: {
+            'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400'
+          }
+        })
+      }
+    } catch (e) {
+      // Continue to next path
+    }
   }
+
+  // Fallback redirect to static public asset
+  const origin = new URL(request.url).origin
+  return NextResponse.redirect(`${origin}/data/${filename}`)
 }

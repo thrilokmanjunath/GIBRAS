@@ -57,6 +57,7 @@ export default function GibrasApp() {
   // Map state
   const mapContainer = useRef(null)
   const mapInstance = useRef(null)
+  const mapMarker = useRef(null)
   const [activeLayers, setActiveLayers] = useState({
     taluks: true,
     geology: false,
@@ -65,6 +66,29 @@ export default function GibrasApp() {
     monitoring_wells: true,
     historical_wells: true,
   })
+
+  // Dynamic Layer Visibility Controller
+  const toggleLayer = (layerKey) => {
+    setActiveLayers((prev) => {
+      const next = !prev[layerKey]
+      const visibility = next ? 'visible' : 'none'
+      const map = mapInstance.current
+      if (map) {
+        if (layerKey === 'taluks') {
+          if (map.getLayer('taluks-fill')) map.setLayoutProperty('taluks-fill', 'visibility', visibility)
+          if (map.getLayer('taluks-line')) map.setLayoutProperty('taluks-line', 'visibility', visibility)
+          if (map.getLayer('taluks-label')) map.setLayoutProperty('taluks-label', 'visibility', visibility)
+        } else if (layerKey === 'lineaments') {
+          if (map.getLayer('lineaments-line')) map.setLayoutProperty('lineaments-line', 'visibility', visibility)
+        } else if (layerKey === 'monitoring_wells') {
+          if (map.getLayer('cgwb-circle')) map.setLayoutProperty('cgwb-circle', 'visibility', visibility)
+        } else if (layerKey === 'drainage') {
+          if (map.getLayer('drainage-line')) map.setLayoutProperty('drainage-line', 'visibility', visibility)
+        }
+      }
+      return { ...prev, [layerKey]: next }
+    })
+  }
 
   // Set default coordinates when taluk changes
   const handleTalukChange = (talukName) => {
@@ -164,104 +188,290 @@ export default function GibrasApp() {
     }
   }
 
-  // MapLibre Initialization
+  // MapLibre Initialization & Interactive GIS Visualizer
   useEffect(() => {
-    if (activeTab === 'map' && mapContainer.current && !mapInstance.current) {
-      import('maplibre-gl').then((maplibregl) => {
-        const map = new maplibregl.Map({
-          container: mapContainer.current,
-          style: {
-            version: 8,
-            sources: {
-              osm: {
-                type: 'raster',
-                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '&copy; OpenStreetMap contributors',
-              },
-            },
-            layers: [
-              {
-                id: 'osm-layer',
-                type: 'raster',
-                source: 'osm',
-                minzoom: 0,
-                maxzoom: 19,
-              },
-            ],
-          },
-          center: [78.0, 13.35],
-          zoom: 8.5,
-        })
+    if (activeTab === 'map' && mapContainer.current) {
+      if (!mapInstance.current) {
+        import('maplibre-gl').then((maplibregl) => {
+          if (!mapContainer.current) return
 
-        map.addControl(new maplibregl.NavigationControl(), 'top-right')
-
-        // Handle map clicks to update coordinates
-        map.on('click', (e) => {
-          setLat(e.lngLat.lat.toFixed(4))
-          setLon(e.lngLat.lng.toFixed(4))
-        })
-
-        map.on('load', () => {
-          // Add Taluks Layer
-          fetch('/api/v1/layers/taluks')
-            .then((r) => r.json())
-            .then((geojson) => {
-              if (map.getSource('taluks-source')) return
-              map.addSource('taluks-source', { type: 'geojson', data: geojson })
-              map.addLayer({
-                id: 'taluks-fill',
-                type: 'fill',
-                source: 'taluks-source',
-                paint: { 'fill-color': '#0284c7', 'fill-opacity': 0.15 },
-              })
-              map.addLayer({
-                id: 'taluks-line',
-                type: 'line',
-                source: 'taluks-source',
-                paint: { 'line-color': '#0284c7', 'line-width': 2 },
-              })
-            })
-            .catch((e) => console.log('Taluks layer fetch error', e))
-
-          // Add Lineaments Layer
-          fetch('/api/v1/layers/lineaments')
-            .then((r) => r.json())
-            .then((geojson) => {
-              if (map.getSource('lineaments-source')) return
-              map.addSource('lineaments-source', { type: 'geojson', data: geojson })
-              map.addLayer({
-                id: 'lineaments-line',
-                type: 'line',
-                source: 'lineaments-source',
-                paint: { 'line-color': '#dc2626', 'line-width': 3, 'line-dasharray': [2, 1] },
-              })
-            })
-            .catch((e) => console.log('Lineaments layer fetch error', e))
-
-          // Add Monitoring Wells Layer
-          fetch('/api/v1/layers/monitoring_wells')
-            .then((r) => r.json())
-            .then((geojson) => {
-              if (map.getSource('cgwb-source')) return
-              map.addSource('cgwb-source', { type: 'geojson', data: geojson })
-              map.addLayer({
-                id: 'cgwb-circle',
-                type: 'circle',
-                source: 'cgwb-source',
-                paint: {
-                  'circle-radius': 7,
-                  'circle-color': '#059669',
-                  'circle-stroke-width': 2,
-                  'circle-stroke-color': '#ffffff',
+          const map = new maplibregl.Map({
+            container: mapContainer.current,
+            style: {
+              version: 8,
+              glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+              sources: {
+                osm: {
+                  type: 'raster',
+                  tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                  tileSize: 256,
+                  attribution: '&copy; OpenStreetMap contributors',
                 },
-              })
-            })
-            .catch((e) => console.log('CGWB wells fetch error', e))
-        })
+              },
+              layers: [
+                {
+                  id: 'osm-layer',
+                  type: 'raster',
+                  source: 'osm',
+                  minzoom: 0,
+                  maxzoom: 19,
+                },
+              ],
+            },
+            center: [78.05, 13.35],
+            zoom: 8.5,
+          })
 
-        mapInstance.current = map
-      })
+          map.addControl(new maplibregl.NavigationControl(), 'top-right')
+
+          // Draggable/Clickable Target Marker
+          const initialLng = parseFloat(lon) || 78.134
+          const initialLat = parseFloat(lat) || 13.136
+          const marker = new maplibregl.Marker({ color: '#0284c7', draggable: true })
+            .setLngLat([initialLng, initialLat])
+            .addTo(map)
+          mapMarker.current = marker
+
+          marker.on('dragend', () => {
+            const lngLat = marker.getLngLat()
+            setLat(lngLat.lat.toFixed(4))
+            setLon(lngLat.lng.toFixed(4))
+          })
+
+          // Handle map clicks to update coordinates & move marker
+          map.on('click', (e) => {
+            setLat(e.lngLat.lat.toFixed(4))
+            setLon(e.lngLat.lng.toFixed(4))
+            marker.setLngLat([e.lngLat.lng, e.lngLat.lat])
+          })
+
+          map.on('load', async () => {
+            map.resize()
+
+            // 1. Add Taluks Layer (Administrative Boundaries)
+            try {
+              let taluksData = null
+              try {
+                const r = await fetch('/data/administrative_boundaries.geojson')
+                if (r.ok) taluksData = await r.json()
+              } catch (e) {}
+              if (!taluksData) {
+                const r2 = await fetch('/api/v1/layers/taluks')
+                if (r2.ok) taluksData = await r2.json()
+              }
+
+              if (taluksData && !map.getSource('taluks-source')) {
+                map.addSource('taluks-source', { type: 'geojson', data: taluksData })
+                map.addLayer({
+                  id: 'taluks-fill',
+                  type: 'fill',
+                  source: 'taluks-source',
+                  paint: {
+                    'fill-color': [
+                      'match',
+                      ['get', 'district'],
+                      'Kolar', '#0284c7',
+                      'Chikkaballapur', '#7c3aed',
+                      '#0284c7'
+                    ],
+                    'fill-opacity': 0.18,
+                  },
+                })
+                map.addLayer({
+                  id: 'taluks-line',
+                  type: 'line',
+                  source: 'taluks-source',
+                  paint: {
+                    'line-color': '#0369a1',
+                    'line-width': 2.5,
+                    'line-opacity': 0.95,
+                  },
+                })
+                map.addLayer({
+                  id: 'taluks-label',
+                  type: 'symbol',
+                  source: 'taluks-source',
+                  layout: {
+                    'text-field': ['get', 'taluk'],
+                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                    'text-size': 12,
+                    'text-anchor': 'center',
+                  },
+                  paint: {
+                    'text-color': '#0f172a',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 2,
+                  },
+                })
+
+                // Popup on taluk click
+                map.on('click', 'taluks-fill', (e) => {
+                  if (!e.features || !e.features.length) return
+                  const p = e.features[0].properties
+                  new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`
+                      <div style="font-family: sans-serif; font-size: 12px; color: #1e293b; padding: 4px;">
+                        <div style="font-weight: bold; font-size: 14px; color: #0284c7; margin-bottom: 3px;">
+                          ${p.taluk} Taluk
+                        </div>
+                        <div><strong>District:</strong> ${p.district}</div>
+                        <div><strong>Extraction Stage:</strong> ${p.cgwb_stage_extraction_pct}% (${p.cgwb_category || 'OVER-EXPLOITED'})</div>
+                        <div><strong>Normal Rainfall:</strong> ${p.annual_rainfall_normal_mm} mm/yr</div>
+                      </div>
+                    `)
+                    .addTo(map)
+                })
+                map.on('mouseenter', 'taluks-fill', () => { map.getCanvas().style.cursor = 'pointer' })
+                map.on('mouseleave', 'taluks-fill', () => { map.getCanvas().style.cursor = '' })
+              }
+            } catch (err) {
+              console.error('Taluks layer load error', err)
+            }
+
+            // 2. Add Drainage Layer
+            try {
+              let drainageData = null
+              try {
+                const r = await fetch('/data/drainage_network.geojson')
+                if (r.ok) drainageData = await r.json()
+              } catch (e) {}
+              if (!drainageData) {
+                const r2 = await fetch('/api/v1/layers/drainage')
+                if (r2.ok) drainageData = await r2.json()
+              }
+              if (drainageData && !map.getSource('drainage-source')) {
+                map.addSource('drainage-source', { type: 'geojson', data: drainageData })
+                map.addLayer({
+                  id: 'drainage-line',
+                  type: 'line',
+                  source: 'drainage-source',
+                  paint: {
+                    'line-color': '#2563eb',
+                    'line-width': 1.8,
+                    'line-opacity': 0.75,
+                  },
+                })
+              }
+            } catch (err) {
+              console.error('Drainage layer load error', err)
+            }
+
+            // 3. Add Lineaments Layer (Faults / Shear Zones)
+            try {
+              let lineamentsData = null
+              try {
+                const r = await fetch('/data/structural_lineaments.geojson')
+                if (r.ok) lineamentsData = await r.json()
+              } catch (e) {}
+              if (!lineamentsData) {
+                const r2 = await fetch('/api/v1/layers/lineaments')
+                if (r2.ok) lineamentsData = await r2.json()
+              }
+
+              if (lineamentsData && !map.getSource('lineaments-source')) {
+                map.addSource('lineaments-source', { type: 'geojson', data: lineamentsData })
+                map.addLayer({
+                  id: 'lineaments-line',
+                  type: 'line',
+                  source: 'lineaments-source',
+                  paint: {
+                    'line-color': '#dc2626',
+                    'line-width': 3.5,
+                    'line-dasharray': [2, 1],
+                    'line-opacity': 0.95,
+                  },
+                })
+
+                // Popup on lineament click
+                map.on('click', 'lineaments-line', (e) => {
+                  if (!e.features || !e.features.length) return
+                  const p = e.features[0].properties
+                  new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`
+                      <div style="font-family: sans-serif; font-size: 12px; color: #1e293b; padding: 4px;">
+                        <div style="font-weight: bold; font-size: 13px; color: #dc2626; margin-bottom: 3px;">
+                          ${p.feature_type || 'FAULT/SHEAR'} LINEAMENT
+                        </div>
+                        <div><strong>ID:</strong> ${p.lineament_id}</div>
+                        <div><strong>Length:</strong> ${p.length_km} km</div>
+                        <div><strong>Strike:</strong> ${p.strike_azimuth}° N-S</div>
+                      </div>
+                    `)
+                    .addTo(map)
+                })
+                map.on('mouseenter', 'lineaments-line', () => { map.getCanvas().style.cursor = 'pointer' })
+                map.on('mouseleave', 'lineaments-line', () => { map.getCanvas().style.cursor = '' })
+              }
+            } catch (err) {
+              console.error('Lineaments layer load error', err)
+            }
+
+            // 4. Add Monitoring Wells Layer (CGWB Piezometers)
+            try {
+              let wellsData = null
+              try {
+                const r = await fetch('/data/cgwb_monitoring_wells.geojson')
+                if (r.ok) wellsData = await r.json()
+              } catch (e) {}
+              if (!wellsData) {
+                const r2 = await fetch('/api/v1/layers/monitoring_wells')
+                if (r2.ok) wellsData = await r2.json()
+              }
+
+              if (wellsData && !map.getSource('cgwb-source')) {
+                map.addSource('cgwb-source', { type: 'geojson', data: wellsData })
+                map.addLayer({
+                  id: 'cgwb-circle',
+                  type: 'circle',
+                  source: 'cgwb-source',
+                  paint: {
+                    'circle-radius': 8,
+                    'circle-color': '#059669',
+                    'circle-stroke-width': 2.5,
+                    'circle-stroke-color': '#ffffff',
+                  },
+                })
+
+                // Popup on CGWB piezometer click
+                map.on('click', 'cgwb-circle', (e) => {
+                  if (!e.features || !e.features.length) return
+                  const p = e.features[0].properties
+                  new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`
+                      <div style="font-family: sans-serif; font-size: 12px; color: #1e293b; padding: 4px;">
+                        <div style="font-weight: bold; font-size: 13px; color: #059669; margin-bottom: 3px;">
+                          ${p.station_name} (${p.well_type || 'PIEZOMETER'})
+                        </div>
+                        <div><strong>Station Code:</strong> ${p.station_code}</div>
+                        <div><strong>Taluk:</strong> ${p.taluk} (${p.district})</div>
+                        <div><strong>Pre-Monsoon SWL:</strong> ${p.pre_monsoon_depth_mgl} m bgl</div>
+                        <div><strong>Post-Monsoon SWL:</strong> ${p.post_monsoon_depth_mgl} m bgl</div>
+                        <div><strong>Decadal Trend:</strong> ${p.decadal_trend_m_per_year} m/year</div>
+                      </div>
+                    `)
+                    .addTo(map)
+                })
+                map.on('mouseenter', 'cgwb-circle', () => { map.getCanvas().style.cursor = 'pointer' })
+                map.on('mouseleave', 'cgwb-circle', () => { map.getCanvas().style.cursor = '' })
+              }
+            } catch (err) {
+              console.error('CGWB wells layer load error', err)
+            }
+
+            // Fit map view to Kolar + Chikkaballapur extent
+            map.fitBounds([[77.30, 12.80], [78.60, 14.05]], { padding: 35, duration: 800 })
+          })
+
+          mapInstance.current = map
+        })
+      } else {
+        setTimeout(() => {
+          mapInstance.current?.resize()
+        }, 100)
+      }
     }
   }, [activeTab])
 
@@ -1018,53 +1228,107 @@ export default function GibrasApp() {
         )}
 
         {/* TAB 4: GIS INTERACTIVE MAP */}
-        {activeTab === 'map' && (
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[700px]">
-            {/* Map Controls */}
-            <div className="bg-slate-900 text-white p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center space-x-2">
+        <div
+          style={{ display: activeTab === 'map' ? 'flex' : 'none' }}
+          className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-col h-[720px]"
+        >
+          {/* Map Controls & Layer Toggles */}
+          <div className="bg-slate-900 text-white p-3 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex items-center space-x-1.5 font-bold mr-1 text-slate-200">
                 <Layers className="w-4 h-4 text-sky-400" />
-                <span className="font-bold">Active GIS Layers:</span>
-                <span className="text-slate-400">Click anywhere on the map to set coordinates</span>
+                <span>Layers:</span>
               </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-sky-900/60 border border-sky-600/40 px-2 py-1 rounded text-sky-300">
-                  Selected: Lat {lat}, Lon {lon}
-                </span>
-                <button
-                  onClick={() => setActiveTab('farmer')}
-                  className="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded font-semibold transition"
-                >
-                  Assess Point &rarr;
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleLayer('taluks')}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition border flex items-center gap-1.5 ${
+                  activeLayers.taluks
+                    ? 'bg-sky-600/90 text-white border-sky-400 shadow-sm'
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+                Taluk Boundaries
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleLayer('lineaments')}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition border flex items-center gap-1.5 ${
+                  activeLayers.lineaments
+                    ? 'bg-rose-950/90 text-rose-300 border-rose-500 shadow-sm'
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                Fault Lineaments
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleLayer('monitoring_wells')}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition border flex items-center gap-1.5 ${
+                  activeLayers.monitoring_wells
+                    ? 'bg-emerald-950/90 text-emerald-300 border-emerald-500 shadow-sm'
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                CGWB Piezometers
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleLayer('drainage')}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition border flex items-center gap-1.5 ${
+                  activeLayers.drainage
+                    ? 'bg-blue-950/90 text-blue-300 border-blue-500 shadow-sm'
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                Drainage Network
+              </button>
             </div>
 
-            {/* Map Container */}
-            <div ref={mapContainer} className="flex-1 w-full relative">
-              {/* Floating Legend */}
-              <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur p-3.5 rounded-lg border border-slate-200 shadow-md text-xs space-y-1.5 max-w-xs">
-                <strong className="block text-slate-800 font-bold border-b pb-1 mb-1">Map Legend & Data Sources</strong>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <span className="w-3 h-3 rounded-full bg-sky-600/30 border border-sky-600"></span>
-                  <span>Taluk Boundaries (Survey of India / KSRSAC)</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <span className="w-4 h-0.5 bg-rose-600 border-dashed"></span>
-                  <span>Fault / Shear Lineaments (GSI Bhukosh)</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <span className="w-3 h-3 rounded-full bg-emerald-600"></span>
-                  <span>CGWB Ground Water Piezometers</span>
-                </div>
-                <div className="pt-1 text-[10px] text-slate-400">
-                  Projection: EPSG:32643 (UTM 43N) Metric Calculations
-                </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-sky-950 border border-sky-600/50 px-2.5 py-1 rounded text-sky-300 font-mono text-[11px]">
+                Selected: {lat}°N, {lon}°E
+              </span>
+              <button
+                onClick={() => setActiveTab('farmer')}
+                className="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1 rounded font-semibold transition flex items-center gap-1 text-xs"
+              >
+                Assess Point &rarr;
+              </button>
+            </div>
+          </div>
+
+          {/* Map Container */}
+          <div ref={mapContainer} className="flex-1 w-full relative min-h-[550px]">
+            {/* Floating Legend */}
+            <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur p-3.5 rounded-lg border border-slate-200 shadow-lg text-xs space-y-1.5 max-w-xs">
+              <strong className="block text-slate-800 font-bold border-b pb-1 mb-1">Map Legend & Data Sources</strong>
+              <div className="flex items-center gap-2 text-slate-700">
+                <span className="w-3.5 h-3.5 rounded bg-sky-500/25 border-2 border-sky-600 flex-shrink-0"></span>
+                <span className="font-medium">Taluk Boundaries (Survey of India / KSRSAC)</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-700">
+                <span className="w-4 h-1 bg-rose-600 rounded-sm flex-shrink-0"></span>
+                <span className="font-medium">Fault / Shear Lineaments (GSI Bhukosh)</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-700">
+                <span className="w-3 h-3 rounded-full bg-emerald-600 border border-white flex-shrink-0 shadow-sm"></span>
+                <span className="font-medium">CGWB Ground Water Piezometers</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-700">
+                <span className="w-4 h-0.5 bg-blue-600 flex-shrink-0"></span>
+                <span>Drainage Streams (Watershed Basins)</span>
+              </div>
+              <div className="pt-1 text-[10px] text-slate-500 border-t mt-1 font-mono">
+                Projection: EPSG:32643 (UTM 43N) Metric Calculations
               </div>
             </div>
           </div>
-        )}
+        </div>
       </main>
 
       {/* Footer */}
