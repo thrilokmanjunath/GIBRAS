@@ -15,13 +15,34 @@ const LINEAMENTS = [
   { id: "LIN_UPIN_07", coords: [[77.52, 13.50], [77.50, 13.70], [77.48, 13.88]] },
 ]
 
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const l2 = dx * dx + dy * dy
+  if (l2 === 0) return Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1))
+  let t = ((px - x1) * dx + (py - y1) * dy) / l2
+  t = Math.max(0, Math.min(1, t))
+  const projX = x1 + t * dx
+  const projY = y1 + t * dy
+  return Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY))
+}
+
 function minDistanceToLineamentsMeters(lat, lon) {
+  const mPerDegLat = 111000
+  const mPerDegLon = 111000 * Math.cos((lat * Math.PI) / 180)
+  const py = lat * mPerDegLat
+  const px = lon * mPerDegLon
+
   let minDistanceM = 999999
   for (const lin of LINEAMENTS) {
-    for (const pt of lin.coords) {
-      const dLat = (lat - pt[1]) * 111000
-      const dLon = (lon - pt[0]) * 111000 * Math.cos((lat * Math.PI) / 180)
-      const dist = Math.sqrt(dLat * dLat + dLon * dLon)
+    for (let i = 0; i < lin.coords.length - 1; i++) {
+      const p1 = lin.coords[i]
+      const p2 = lin.coords[i + 1]
+      const x1 = p1[0] * mPerDegLon
+      const y1 = p1[1] * mPerDegLat
+      const x2 = p2[0] * mPerDegLon
+      const y2 = p2[1] * mPerDegLat
+      const dist = distToSegment(px, py, x1, y1, x2, y2)
       if (dist < minDistanceM) minDistanceM = dist
     }
   }
@@ -48,7 +69,7 @@ export async function POST(request) {
     const assessmentId = crypto.randomUUID()
 
     // Bagepalli or extreme north ridge sparse zone detection (Abstention safety trigger)
-    const isSparse = (latitude > 13.88 && longitude > 77.85 && distLin > 3500) || distLin > 4500
+    const isSparse = (latitude > 13.88 && longitude > 77.85 && distLin > 3500) || distLin > 5500
 
     if (isSparse) {
       const abstained = {
