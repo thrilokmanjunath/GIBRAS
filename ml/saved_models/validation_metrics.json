@@ -1,0 +1,8 @@
+{
+  "mean_brier_score": 0.199,
+  "mean_ece": 0.1714,
+  "mean_roc_auc": 0.8219,
+  "mean_pr_auc": 0.7902,
+  "mean_missed_failure_rate": 0.1864,
+  "total_capital_loss_prevented_inr": 38000000.0
+}
