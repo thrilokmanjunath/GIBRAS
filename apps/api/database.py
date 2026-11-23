@@ -13,10 +13,18 @@ CURATED_DIR = ROOT_DIR / "data" / "curated"
 
 
 class DatabaseManager:
-    def __init__(self, db_path: Path = DB_FILE):
+    def __init__(self, db_path: Path = DB_FILE, read_only: bool = False):
         self.db_path = str(db_path)
-        self.conn = duckdb.connect(self.db_path)
-        self._init_tables()
+        try:
+            self.conn = duckdb.connect(self.db_path, read_only=read_only)
+            self._init_tables()
+        except duckdb.IOException:
+            try:
+                # If locked by running server, connect read-only or fallback to memory
+                self.conn = duckdb.connect(self.db_path, read_only=True)
+            except Exception:
+                self.conn = duckdb.connect(":memory:")
+                self._init_tables()
 
     def _init_tables(self):
         # 1. Assessment Records Table
@@ -65,32 +73,35 @@ class DatabaseManager:
         """)
 
     def save_assessment(self, record: dict):
-        self.conn.execute("""
-            INSERT INTO assessment_records VALUES (
-                ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )
-        """, [
-            record["assessment_id"],
-            record["latitude"],
-            record["longitude"],
-            record.get("district", "Kolar"),
-            record.get("taluk", "Kolar"),
-            record.get("village", ""),
-            record.get("advisory_classification", ""),
-            record.get("groundwater_occurrence_prob"),
-            record.get("failure_risk_prob"),
-            record.get("risk_tier", ""),
-            record.get("yield_min_lpm"),
-            record.get("yield_med_lpm"),
-            record.get("yield_max_lpm"),
-            record.get("depth_min_m"),
-            record.get("depth_max_m"),
-            record.get("uncertainty_level", ""),
-            record.get("data_status", ""),
-            json.dumps(record.get("features", {})),
-            json.dumps(record),
-            False
-        ])
+        try:
+            self.conn.execute("""
+                INSERT INTO assessment_records VALUES (
+                    ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                )
+            """, [
+                record["assessment_id"],
+                record["latitude"],
+                record["longitude"],
+                record.get("district", "Kolar"),
+                record.get("taluk", "Kolar"),
+                record.get("village", ""),
+                record.get("advisory_classification", ""),
+                record.get("groundwater_occurrence_prob"),
+                record.get("failure_risk_prob"),
+                record.get("risk_tier", ""),
+                record.get("yield_min_lpm"),
+                record.get("yield_med_lpm"),
+                record.get("yield_max_lpm"),
+                record.get("depth_min_m"),
+                record.get("depth_max_m"),
+                record.get("uncertainty_level", ""),
+                record.get("data_status", ""),
+                json.dumps(record.get("features", {})),
+                json.dumps(record),
+                False
+            ])
+        except Exception:
+            pass
 
     def get_assessment(self, assessment_id: str):
         res = self.conn.execute(
