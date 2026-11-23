@@ -79,11 +79,11 @@ export default function GibrasApp() {
   // Load analytics and recent assessments
   const loadGovData = async () => {
     try {
-      const sRes = await fetch('http://localhost:8050/api/v1/analytics/district_summary')
+      const sRes = await fetch('/api/v1/analytics/district_summary')
       if (sRes.ok) setGovSummary(await sRes.json())
-      const mRes = await fetch('http://localhost:8050/api/v1/analytics/model_performance')
+      const mRes = await fetch('/api/v1/analytics/model_performance')
       if (mRes.ok) setModelMetrics(await mRes.json())
-      const aRes = await fetch('http://localhost:8050/api/v1/assess/recent')
+      const aRes = await fetch('/api/v1/assess/recent')
       if (aRes.ok) setRecentAssessments(await aRes.json())
     } catch (err) {
       console.error('Failed to load gov data:', err)
@@ -102,7 +102,7 @@ export default function GibrasApp() {
     setAssessmentResult(null)
 
     try {
-      const res = await fetch('http://localhost:8050/api/v1/assess', {
+      const res = await fetch('/api/v1/assess', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,7 +135,7 @@ export default function GibrasApp() {
     e.preventDefault()
     setHydroMessage('')
     try {
-      const res = await fetch('http://localhost:8050/api/v1/hydrogeologist/field_verification', {
+      const res = await fetch('/api/v1/hydrogeologist/field_verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -204,7 +204,7 @@ export default function GibrasApp() {
 
         map.on('load', () => {
           // Add Taluks Layer
-          fetch('http://localhost:8050/api/v1/layers/taluks')
+          fetch('/api/v1/layers/taluks')
             .then((r) => r.json())
             .then((geojson) => {
               if (map.getSource('taluks-source')) return
@@ -225,7 +225,7 @@ export default function GibrasApp() {
             .catch((e) => console.log('Taluks layer fetch error', e))
 
           // Add Lineaments Layer
-          fetch('http://localhost:8050/api/v1/layers/lineaments')
+          fetch('/api/v1/layers/lineaments')
             .then((r) => r.json())
             .then((geojson) => {
               if (map.getSource('lineaments-source')) return
@@ -240,7 +240,7 @@ export default function GibrasApp() {
             .catch((e) => console.log('Lineaments layer fetch error', e))
 
           // Add Monitoring Wells Layer
-          fetch('http://localhost:8050/api/v1/layers/monitoring_wells')
+          fetch('/api/v1/layers/monitoring_wells')
             .then((r) => r.json())
             .then((geojson) => {
               if (map.getSource('cgwb-source')) return
