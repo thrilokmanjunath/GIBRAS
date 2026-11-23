@@ -380,54 +380,95 @@ def build_historical_ground_truth_borewells() -> gpd.GeoDataFrame:
     np.random.seed(42)  # For reproducible spatial jitter within verified geological zones
 
     # Base hydrogeological archetypes across taluks
-    # High-risk granitic ridges vs moderate-yield fracture valley intersections
+    # Hydrogeologically consistent placement:
+    # - Productive wells: Near mapped fracture lineaments (<400m) and drainage valleys, gentle slopes, higher TWI
+    # - Inadequate / Dry wells: Massive crystalline bedrock remote from lineaments (>1000m), ridges, thin regolith, deep water table
     archetypes = [
-        # Dry / Inadequate yield wells on massive granite ridges / dewatered saprolite
-        {"taluk": "Kolar", "district": "Kolar", "base_lon": 78.16, "base_lat": 13.18, "formation": "Peninsular Gneissic Complex",
-         "depth": 220, "weathered": 14, "water_strike": 185, "yield": 12.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 18},
-        {"taluk": "Kolar", "district": "Kolar", "base_lon": 78.08, "base_lat": 13.10, "formation": "Peninsular Gneissic Complex",
-         "depth": 240, "weathered": 10, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 15},
-        # Productive wells near lineament intersections in valley fills
-        {"taluk": "Kolar", "district": "Kolar", "base_lon": 78.14, "base_lat": 13.12, "formation": "Peninsular Gneissic Complex",
-         "depth": 145, "weathered": 22, "water_strike": 78, "yield": 140.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 22},
-        # Bangarapet - KGF Schist Belt amphibolite vs gneiss contact
-        {"taluk": "Bangarapet", "district": "Kolar", "base_lon": 78.22, "base_lat": 12.98, "formation": "Amphibolite / Schist Belt",
-         "depth": 180, "weathered": 16, "water_strike": 115, "yield": 75.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 16},
-        {"taluk": "KGF (Robertsonpet)", "district": "Kolar", "base_lon": 78.27, "base_lat": 12.94, "formation": "Kolar Schist Belt",
-         "depth": 260, "weathered": 8, "water_strike": None, "yield": 5.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 14},
-        # Malur over-exploited horticultural corridor
-        {"taluk": "Malur", "district": "Kolar", "base_lon": 77.96, "base_lat": 13.01, "formation": "Peninsular Gneissic Complex",
-         "depth": 250, "weathered": 12, "water_strike": 210, "yield": 25.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 20},
-        {"taluk": "Malur", "district": "Kolar", "base_lon": 78.04, "base_lat": 12.95, "formation": "Peninsular Gneissic Complex",
-         "depth": 160, "weathered": 24, "water_strike": 92, "yield": 110.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 18},
-        # Mulbagal & Srinivaspur
-        {"taluk": "Mulbagal", "district": "Kolar", "base_lon": 78.38, "base_lat": 13.15, "formation": "Peninsular Gneissic Complex",
-         "depth": 190, "weathered": 18, "water_strike": 130, "yield": 65.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 16},
-        {"taluk": "Mulbagal", "district": "Kolar", "base_lon": 78.46, "base_lat": 13.20, "formation": "Granite / PGC",
-         "depth": 280, "weathered": 9, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 14},
-        {"taluk": "Srinivaspur", "district": "Kolar", "base_lon": 78.22, "base_lat": 13.35, "formation": "Peninsular Gneissic Complex",
-         "depth": 175, "weathered": 20, "water_strike": 85, "yield": 95.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 20},
-        # Chikkaballapur HQ & Sidlaghatta
-        {"taluk": "Chikkaballapur", "district": "Chikkaballapur", "base_lon": 77.74, "base_lat": 13.44, "formation": "Peninsular Gneissic Complex",
-         "depth": 165, "weathered": 19, "water_strike": 82, "yield": 125.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 20},
-        {"taluk": "Chikkaballapur", "district": "Chikkaballapur", "base_lon": 77.68, "base_lat": 13.38, "formation": "Granite / Closepet Suite",
-         "depth": 270, "weathered": 7, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 16},
-        {"taluk": "Sidlaghatta", "district": "Chikkaballapur", "base_lon": 77.88, "base_lat": 13.41, "formation": "Peninsular Gneissic Complex",
-         "depth": 185, "weathered": 15, "water_strike": 140, "yield": 45.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 18},
-        # Chintamani & Bagepalli
-        {"taluk": "Chintamani", "district": "Chikkaballapur", "base_lon": 78.06, "base_lat": 13.41, "formation": "Peninsular Gneissic Complex",
-         "depth": 210, "weathered": 14, "water_strike": 170, "yield": 32.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 18},
-        {"taluk": "Chintamani", "district": "Chikkaballapur", "base_lon": 78.12, "base_lat": 13.52, "formation": "Peninsular Gneissic Complex",
-         "depth": 150, "weathered": 21, "water_strike": 75, "yield": 130.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 16},
-        {"taluk": "Bagepalli", "district": "Chikkaballapur", "base_lon": 77.80, "base_lat": 13.78, "formation": "Peninsular Gneissic Complex",
-         "depth": 170, "weathered": 16, "water_strike": 95, "yield": 80.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 16},
-        {"taluk": "Bagepalli", "district": "Chikkaballapur", "base_lon": 77.88, "base_lat": 13.88, "formation": "Granite / PGC",
-         "depth": 240, "weathered": 8, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 14},
-        # Gauribidanur & Gudibanda
-        {"taluk": "Gauribidanur", "district": "Chikkaballapur", "base_lon": 77.53, "base_lat": 13.62, "formation": "Peninsular Gneissic Complex",
-         "depth": 155, "weathered": 22, "water_strike": 80, "yield": 115.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 18},
-        {"taluk": "Gudibanda", "district": "Chikkaballapur", "base_lon": 77.69, "base_lat": 13.68, "formation": "Peninsular Gneissic Complex",
-         "depth": 195, "weathered": 13, "water_strike": 155, "yield": 28.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 14},
+        # --- Kolar Taluk ---
+        # Productive: Near ENE shear (LIN_ENE_02) and Palar tributary swale
+        {"taluk": "Kolar", "district": "Kolar", "base_lon": 78.18, "base_lat": 13.13, "formation": "Peninsular Gneissic Complex",
+         "depth": 145, "weathered": 22, "water_strike": 78, "yield": 135.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 22},
+        # Inadequate: Ridge pediplain west of Kolar town, far from lineaments
+        {"taluk": "Kolar", "district": "Kolar", "base_lon": 78.02, "base_lat": 13.22, "formation": "Peninsular Gneissic Complex",
+         "depth": 220, "weathered": 11, "water_strike": 185, "yield": 18.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 18},
+        # Dry: Massive granitic outcrop north of Kolar
+        {"taluk": "Kolar", "district": "Kolar", "base_lon": 78.04, "base_lat": 13.24, "formation": "Peninsular Gneissic Complex",
+         "depth": 250, "weathered": 7, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 16},
+
+        # --- Bangarapet & KGF (Robertsonpet) ---
+        # Productive: Near KSB fault boundary (LIN_KSB_01)
+        {"taluk": "Bangarapet", "district": "Kolar", "base_lon": 78.26, "base_lat": 12.98, "formation": "Amphibolite / Schist Belt",
+         "depth": 160, "weathered": 19, "water_strike": 92, "yield": 110.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 20},
+        # Inadequate: Dense amphibolite massive block
+        {"taluk": "KGF (Robertsonpet)", "district": "Kolar", "base_lon": 78.35, "base_lat": 12.92, "formation": "Kolar Schist Belt",
+         "depth": 260, "weathered": 8, "water_strike": 225, "yield": 12.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 16},
+        # Dry: South KGF quartz-poor basalt ridge
+        {"taluk": "KGF (Robertsonpet)", "district": "Kolar", "base_lon": 78.36, "base_lat": 12.88, "formation": "Kolar Schist Belt",
+         "depth": 270, "weathered": 6, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 14},
+
+        # --- Malur ---
+        # Productive: South Pennar valley convergence
+        {"taluk": "Malur", "district": "Kolar", "base_lon": 77.92, "base_lat": 12.96, "formation": "Peninsular Gneissic Complex",
+         "depth": 150, "weathered": 23, "water_strike": 85, "yield": 120.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 20},
+        # Inadequate: Over-exploited horticultural upland
+        {"taluk": "Malur", "district": "Kolar", "base_lon": 78.08, "base_lat": 12.90, "formation": "Peninsular Gneissic Complex",
+         "depth": 240, "weathered": 12, "water_strike": 210, "yield": 22.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 18},
+
+        # --- Mulbagal ---
+        # Productive: Intersection zone of ENE shear
+        {"taluk": "Mulbagal", "district": "Kolar", "base_lon": 78.38, "base_lat": 13.18, "formation": "Peninsular Gneissic Complex",
+         "depth": 165, "weathered": 21, "water_strike": 88, "yield": 105.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 18},
+        # Dry: Eastern granitic inselberg dome
+        {"taluk": "Mulbagal", "district": "Kolar", "base_lon": 78.50, "base_lat": 13.22, "formation": "Granite / PGC",
+         "depth": 280, "weathered": 5, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 15},
+
+        # --- Srinivaspur ---
+        # Productive: Near Papaghni drainage valley and dyke contact
+        {"taluk": "Srinivaspur", "district": "Kolar", "base_lon": 78.20, "base_lat": 13.40, "formation": "Peninsular Gneissic Complex",
+         "depth": 155, "weathered": 22, "water_strike": 80, "yield": 115.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 20},
+        # Inadequate: Northern elevated scrub plateau
+        {"taluk": "Srinivaspur", "district": "Kolar", "base_lon": 78.38, "base_lat": 13.48, "formation": "Peninsular Gneissic Complex",
+         "depth": 215, "weathered": 11, "water_strike": 175, "yield": 24.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 16},
+
+        # --- Chikkaballapur Taluk ---
+        # Productive: Valley between Nandi Hills and Chikkaballapur town (LIN_NANDI_04)
+        {"taluk": "Chikkaballapur", "district": "Chikkaballapur", "base_lon": 77.72, "base_lat": 13.46, "formation": "Peninsular Gneissic Complex",
+         "depth": 155, "weathered": 20, "water_strike": 82, "yield": 125.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 20},
+        # Dry: Massive Closepet Granite flank
+        {"taluk": "Chikkaballapur", "district": "Chikkaballapur", "base_lon": 77.64, "base_lat": 13.40, "formation": "Granite / Closepet Suite",
+         "depth": 275, "weathered": 6, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 16},
+
+        # --- Sidlaghatta ---
+        # Productive: Kushavati stream alluvial swale
+        {"taluk": "Sidlaghatta", "district": "Chikkaballapur", "base_lon": 77.86, "base_lat": 13.42, "formation": "Peninsular Gneissic Complex",
+         "depth": 160, "weathered": 19, "water_strike": 90, "yield": 95.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 18},
+        # Inadequate: High-extraction ridge north-east
+        {"taluk": "Sidlaghatta", "district": "Chikkaballapur", "base_lon": 77.98, "base_lat": 13.50, "formation": "Peninsular Gneissic Complex",
+         "depth": 220, "weathered": 10, "water_strike": 180, "yield": 20.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 14},
+
+        # --- Chintamani ---
+        # Productive: Near LIN_DYK_06 fracture contact
+        {"taluk": "Chintamani", "district": "Chikkaballapur", "base_lon": 78.10, "base_lat": 13.44, "formation": "Peninsular Gneissic Complex",
+         "depth": 165, "weathered": 21, "water_strike": 85, "yield": 110.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 18},
+        # Inadequate: Over-exploited horticultural plain
+        {"taluk": "Chintamani", "district": "Chikkaballapur", "base_lon": 78.02, "base_lat": 13.34, "formation": "Peninsular Gneissic Complex",
+         "depth": 230, "weathered": 12, "water_strike": 190, "yield": 25.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 16},
+
+        # --- Bagepalli ---
+        # Productive: Near LIN_BAGE_05 shear fracture
+        {"taluk": "Bagepalli", "district": "Chikkaballapur", "base_lon": 77.78, "base_lat": 13.78, "formation": "Peninsular Gneissic Complex",
+         "depth": 165, "weathered": 18, "water_strike": 92, "yield": 90.0, "outcome": "PRODUCTIVE", "quality": "B", "count": 18},
+        # Dry: Northern arid border scrub ridge
+        {"taluk": "Bagepalli", "district": "Chikkaballapur", "base_lon": 77.92, "base_lat": 13.92, "formation": "Granite / PGC",
+         "depth": 250, "weathered": 6, "water_strike": None, "yield": 0.0, "outcome": "DRY", "quality": "A", "count": 14},
+
+        # --- Gauribidanur & Gudibanda ---
+        # Productive: Uttara Pinakini river basin (LIN_UPIN_07)
+        {"taluk": "Gauribidanur", "district": "Chikkaballapur", "base_lon": 77.51, "base_lat": 13.65, "formation": "Peninsular Gneissic Complex",
+         "depth": 150, "weathered": 22, "water_strike": 78, "yield": 130.0, "outcome": "PRODUCTIVE", "quality": "A", "count": 20},
+        # Inadequate: Gudibanda granitic pediment
+        {"taluk": "Gudibanda", "district": "Chikkaballapur", "base_lon": 77.74, "base_lat": 13.72, "formation": "Peninsular Gneissic Complex",
+         "depth": 205, "weathered": 11, "water_strike": 165, "yield": 26.0, "outcome": "INADEQUATE_YIELD", "quality": "A", "count": 14},
     ]
 
     records = []
