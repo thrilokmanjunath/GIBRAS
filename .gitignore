@@ -63,3 +63,7 @@ htmlcov/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# DuckDB local database files
+*.duckdb
+*.duckdb.wal
