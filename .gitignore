@@ -67,3 +67,11 @@ htmlcov/
 # DuckDB local database files
 *.duckdb
 *.duckdb.wal
+
+# Local process logs and PIDs
+*.log
+*.pid
+.backend.log
+.frontend.log
+.backend.pid
+.frontend.pid
