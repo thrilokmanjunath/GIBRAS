@@ -48,9 +48,13 @@ for i in {1..30}; do
 done
 
 # Start Next.js Frontend
-echo "Launching Next.js Web Portal on http://localhost:3050..."
+echo "Building Next.js Web Portal for optimized local serving..."
 cd apps/web
-npm run dev > ../../.frontend.log 2>&1 &
+if [ ! -d ".next" ]; then
+    npm run build
+fi
+echo "Launching Next.js Web Portal on http://localhost:3050..."
+npm run start > ../../.frontend.log 2>&1 &
 FRONTEND_PID=$!
 cd "$DIR"
 echo $FRONTEND_PID > .frontend.pid
