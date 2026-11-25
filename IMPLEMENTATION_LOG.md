@@ -74,3 +74,27 @@ All major engineering tasks, code modifications, verification runs, test results
   - Deployed to Vercel production: [https://web-pied-omega-49.vercel.app](https://web-pied-omega-49.vercel.app).
   - Pushed to GitHub `main` at commit `9107c67`.
 - **Status**: Complete, deployed, and verified live.
+
+---
+
+### [2026-11-25] - Task 8.4: Authentic Government Portal Transformation (Bhoomojini & Bhoomi Reference)
+- **User Directive**: Transform the interface from dark/neon vibe-coded aesthetic into an authentic, authoritative, official Karnataka State Government portal inspired directly by Bhoomojini (`https://www.bhoomojini.karnataka.gov.in`, Revenue Department / KGWA).
+- **Completed**:
+  - Replaced the dark cyberpunk/sci-fi styling with the official Karnataka Government administrative portal design system:
+    - **Indian National Tricolor Masthead**: Precision saffron (`#ff9933`), white (`#ffffff`), and green (`#138808`) ribbon.
+    - **Official Government Header**: High-resolution official Karnataka State Emblem (Gandaberunda seal with Sharabhas and "ಸರ್ಕಾರ" insignia) and Ashoka Lion Capital of India with "सत्यमेव जयते", "ಕರ್ನಾಟಕ ಸರ್ಕಾರ / GOVERNMENT OF KARNATAKA", "ಕಂದಾಯ ಇಲಾಖೆ ಹಾಗೂ ಕರ್ನಾಟಕ ಅಂತರ್ಜಲ ನಿರ್ವಹಣಾ ಪ್ರಾಧಿಕಾರ (KGWA)", and official citizen helpline (`080-22262441`).
+    - **Institutional Navigation Bar**: Deep Karnataka Government Navy (`#003366`) with saffron accent indicators, structured tabs:
+      1. 🌾 ರೈತ ಸೇವಾ ಕೇಂದ್ರ (Citizen & Farmer Advisory - RTC & Survey Search)
+      2. 🏛️ ಸರ್ಕಾರಿ ಆಡಳಿತ ಫಲಕ (Administrative Dashboard & CGWB Taluk Extraction Matrix)
+      3. 🔬 ಜಲವಿಜ್ಞಾನಿಗಳ ಕಚೇರಿ (Hydrogeologist Field Sounding Desk & VES Register)
+      4. 🗺️ ಭೂ-ಮಾಹಿತಿ ನಕ್ಷೆ (Interactive GIS Map - KSRSAC / Survey of India / GSI)
+    - **Citizen Verification Form (Bhoomi RTC Search Style)**: Form-1A for land parcel verification with District, Taluk, Hobli, Village, Survey Number / Hissa Number, GPS coordinates, and borewell purpose.
+    - **Official Government Certificate Dossier**: Formatted as an official Karnataka Government Land & Borewell Verification Certificate (Pahani / Mojini sketch certificate) with official seal watermark, registration number (`KGWA-XXXXXX`), Risk Grade, technical parameters table, and statutory notice under the Karnataka Ground Water Act, 2011.
+    - **Authentic Geological Borehole Strata Log**: Rendered with official CGWB / Geological Survey of India CAD technical hatching patterns (Topsoil / Alluvium, Weathered Gneissic Saprolite, Fractured Aquifer Strike Zone, and Massive Granitic Basement).
+    - **Public Financial Loss Mitigation Ticker**: Official alert detailing the ₹1,50,000 - ₹3,00,000 average borehole drilling loss and protecting farmers from debt distress.
+    - **Printable Certificate**: Fully formatted for standard A4 government printing with signature lines for the Senior District Hydrogeologist.
+  - Rebuilt Next.js production bundle with 0 errors (`npm run build`).
+  - Ran full test suite with `.venv/bin/pytest tests/`: 22/22 tests passed.
+  - Deployed to Vercel production: `https://web-pied-omega-49.vercel.app` (Aliased from `https://web-rbxg20pvj-thrilok-m.vercel.app`).
+  - Verified live deployment serving 200 OK with authentic Karnataka Government bilingual headers.
+- **Status**: Completed and verified live in production.

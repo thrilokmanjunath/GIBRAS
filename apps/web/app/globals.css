@@ -5,89 +5,132 @@
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
 :root {
-  --foreground-rgb: 241, 245, 249;
-  --background-rgb: 10, 14, 23;
+  --gov-navy: #003366;
+  --gov-navy-dark: #071f36;
+  --gov-saffron: #ff9933;
+  --gov-green: #138808;
+  --gov-gold: #d97706;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: #080c14;
+  color: #1e293b;
+  background-color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tabular figures for numbers across all telemetry & financial metrics */
+/* Tabular figures for telemetry & financial metrics */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Precision Hairline Optic Borders */
-.optic-card {
-  background: linear-gradient(180deg, rgba(19, 26, 42, 0.85) 0%, rgba(12, 17, 29, 0.95) 100%);
-  border: 1px solid rgba(51, 65, 85, 0.6);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
+/* Indian National Tricolor Border */
+.tricolor-stripe {
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    #ff9933 0%,
+    #ff9933 33.3%,
+    #ffffff 33.3%,
+    #ffffff 66.6%,
+    #138808 66.6%,
+    #138808 100%
+  );
 }
 
-.optic-glow-cyan {
-  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.25);
+/* Official Government Portal Cards */
+.gov-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.optic-glow-rose {
-  box-shadow: 0 0 25px -4px rgba(244, 63, 94, 0.25);
+.gov-card-header {
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 10px 16px;
+  font-weight: 700;
+  color: #003366;
 }
 
-.optic-glow-emerald {
-  box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.25);
+/* Official Government Form Table */
+.gov-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.optic-glow-amber {
-  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.25);
+.gov-table th {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 12px;
 }
 
-/* Subtle subterranean strata hatch pattern */
-.bg-regolith-hatch {
+.gov-table td {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  color: #334155;
+}
+
+/* Geological Hatchings for Borehole Strata Log */
+.strata-regolith {
+  background-color: #fef3c7;
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(217, 119, 6, 0.08),
-    rgba(217, 119, 6, 0.08) 6px,
-    transparent 6px,
+    #d97706 0,
+    #d97706 1px,
+    transparent 0,
+    transparent 8px
+  );
+}
+
+.strata-weathered {
+  background-color: #e0f2fe;
+  background-image: radial-gradient(#0284c7 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.strata-fractured {
+  background-color: #dbeafe;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #2563eb 0,
+    #2563eb 1.5px,
+    transparent 0,
+    transparent 10px
+  );
+}
+
+.strata-basement {
+  background-color: #f1f5f9;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #64748b 0,
+    #64748b 1px,
+    transparent 0,
     transparent 12px
   );
 }
 
-.bg-fracture-hatch {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(14, 165, 233, 0.12),
-    rgba(14, 165, 233, 0.12) 8px,
-    transparent 8px,
-    transparent 16px
-  );
+/* Official Watermark Seal for Printable Dossier */
+.gov-watermark {
+  background-image: url('/img/karnataka_seal.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 260px 260px;
 }
 
-/* Custom cinematic scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0b0f19;
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Print Styles for Official Assessment Dossier */
+/* Official Print Styles */
 @media print {
   body {
-    background: white !important;
-    color: black !important;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
   header, nav, footer, .no-print {
     display: none !important;
@@ -95,10 +138,8 @@ body {
   .print-only {
     display: block !important;
   }
-  .optic-card {
-    background: white !important;
-    border: 1px solid #cbd5e1 !important;
-    color: black !important;
+  .gov-card {
+    border: 1px solid #94a3b8 !important;
     box-shadow: none !important;
   }
 }

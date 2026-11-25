@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- Circular Government Seal Ring -->
+  <circle cx="100" cy="100" r="96" fill="#ffffff" stroke="#991b1b" stroke-width="4"/>
+  <circle cx="100" cy="100" r="90" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <circle cx="100" cy="100" r="70" fill="#ffffff" stroke="#991b1b" stroke-width="2"/>
+
+  <!-- Curved Text Top: ಕರ್ನಾಟಕ ಸರ್ಕಾರ -->
+  <path id="textPathTop" d="M 28 100 A 72 72 0 0 1 172 100" fill="none"/>
+  <text font-family="'Noto Sans Kannada', Arial, sans-serif" font-size="12" font-weight="900" fill="#991b1b" text-anchor="middle">
+    <textPath href="#textPathTop" startOffset="50%">
+      ಕರ್ನಾಟಕ ಸರ್ಕಾರ
+    </textPath>
+  </text>
+
+  <!-- Curved Text Bottom: GOVERNMENT OF KARNATAKA -->
+  <path id="textPathBottom" d="M 172 100 A 72 72 0 0 1 28 100" fill="none"/>
+  <text font-family="Arial, sans-serif" font-size="8.5" font-weight="800" fill="#991b1b" letter-spacing="1" text-anchor="middle">
+    <textPath href="#textPathBottom" startOffset="50%">
+      GOVERNMENT OF KARNATAKA
+    </textPath>
+  </text>
+
+  <!-- Central Shield (Red / Crimson) -->
+  <g transform="translate(100, 108)">
+    <!-- Shield Outline -->
+    <path d="M -30,-42 L 30,-42 Q 30,2 0,38 Q -30,2 -30,-42 Z" fill="#991b1b" stroke="#f59e0b" stroke-width="2"/>
+    <path d="M -26,-38 L 26,-38 Q 26,0 0,33 Q -26,0 -26,-38 Z" fill="#b91c1c" stroke="#fef08a" stroke-width="1"/>
+
+    <!-- Gandaberunda (Two-Headed Sacred Bird) in Gold -->
+    <!-- Left Wing & Head -->
+    <path d="M -2,-8 Q -6,-28 -16,-28 Q -20,-28 -22,-20 Q -20,-16 -16,-16 Q -22,-8 -24,4 Q -16,8 -2,2 Z" fill="#fbbf24" stroke="#d97706" stroke-width="0.8"/>
+    <!-- Right Wing & Head -->
+    <path d="M 2,-8 Q 6,-28 16,-28 Q 20,-28 22,-20 Q 20,-16 16,-16 Q 22,-8 24,4 Q 16,8 2,2 Z" fill="#fbbf24" stroke="#d97706" stroke-width="0.8"/>
+    <!-- Double Heads (Left beak, Right beak) -->
+    <polygon points="-8,-24 -14,-22 -8,-20" fill="#fef08a"/>
+    <polygon points="8,-24 14,-22 8,-20" fill="#fef08a"/>
+    <!-- Crown / Kalasa on central shield -->
+    <path d="M -6,-28 L 0,-34 L 6,-28 L 0,-24 Z" fill="#fef08a" stroke="#d97706" stroke-width="0.8"/>
+    <!-- Tail Feathers -->
+    <path d="M 0,2 L -8,22 L 0,16 L 8,22 Z" fill="#fbbf24"/>
+  </g>
+
+  <!-- Ashoka Lion Crest on Top -->
+  <g transform="translate(100, 50) scale(0.65)">
+    <!-- Base Abacus with Chakra -->
+    <rect x="-35" y="8" width="70" height="7" rx="2" fill="#d97706"/>
+    <circle cx="0" cy="11.5" r="3.5" fill="#1e3a8a"/>
+    <!-- Center Lion -->
+    <path d="M -12,8 Q -14,-16 0,-20 Q 14,-16 12,8 Z" fill="#b45309"/>
+    <circle cx="0" cy="-14" r="8" fill="#d97706"/>
+    <circle cx="-3" cy="-15" r="1.5" fill="#1e293b"/>
+    <circle cx="3" cy="-15" r="1.5" fill="#1e293b"/>
+    <!-- Left Lion Mane Profile -->
+    <path d="M -14,8 Q -28,-6 -20,-18 Q -14,-14 -12,-6 Z" fill="#92400e"/>
+    <!-- Right Lion Mane Profile -->
+    <path d="M 14,8 Q 28,-6 20,-18 Q 14,-14 12,-6 Z" fill="#92400e"/>
+  </g>
+
+  <!-- Supporter Sharabhas (Mythical Lions on sides) in Gold -->
+  <g transform="translate(56, 110) scale(0.45)">
+    <path d="M 0,0 C -15,-20 -5,-50 20,-45 C 30,-30 20,-10 15,20 C 10,40 -10,50 -20,35 C -15,15 -5,10 0,0 Z" fill="#d97706"/>
+    <circle cx="12" cy="-35" r="6" fill="#fbbf24"/>
+  </g>
+  <g transform="translate(144, 110) scale(-0.45, 0.45)">
+    <path d="M 0,0 C -15,-20 -5,-50 20,-45 C 30,-30 20,-10 15,20 C 10,40 -10,50 -20,35 C -15,15 -5,10 0,0 Z" fill="#d97706"/>
+    <circle cx="12" cy="-35" r="6" fill="#fbbf24"/>
+  </g>
+
+  <!-- Satyameva Jayate Motto Banner at Base -->
+  <rect x="52" y="162" width="96" height="13" rx="2" fill="#fffbeb" stroke="#b45309" stroke-width="1"/>
+  <text x="100" y="172" font-family="'Noto Sans Kannada', Arial, sans-serif" font-size="8" font-weight="bold" fill="#78350f" text-anchor="middle">
+    ಸತ್ಯಮೇವ ಜಯತೆ
+  </text>
+</svg>
